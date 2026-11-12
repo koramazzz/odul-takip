@@ -1,6 +1,6 @@
 {
-  "name": "Ödül ve Sınav Takibi",
-  "short_name": "Ödül Takibi",
+  "name": "YunulosTakip",
+  "short_name": "YunulosTakip",
   "lang": "tr",
   "start_url": ".",
   "display": "standalone",

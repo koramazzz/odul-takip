@@ -1,4 +1,4 @@
-# Ödül ve Sınav Takibi
+# YunulosTakip
 
 Aile içi günlük ödül (ödev, kitap, namaz) ve sınav takibi. Tarayıcıda çalışan, derleme gerektirmeyen bir web uygulaması; veriler Supabase'de tutulur.
 
