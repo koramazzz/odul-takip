@@ -1,13 +1,19 @@
 import { todayISO } from "../dates.js";
 import { esc, money } from "../format.js";
 
-export function checkButton({ action, pressed, title, reward }) {
-  return `<button type="button" class="check" data-action="${action}" aria-pressed="${pressed}">
-    <span class="box" aria-hidden="true">✓</span>
+/* `task` hem görevin rengini (CSS sınıfı) hem simgesini belirler. */
+export function checkButton({ action, task, icon, pressed, title, reward }) {
+  return `<button type="button" class="check ${task}" data-action="${action}" aria-pressed="${pressed}">
+    <span class="icon" aria-hidden="true">${icon}</span>
     <span class="grow">${esc(title)}</span>
     <span class="reward num">+${money(reward)}</span>
+    <span class="box" aria-hidden="true">✓</span>
   </button>`;
 }
+
+/* Değişince eski değerden yenisine sayarak gösterilen para tutarı. */
+export const countedMoney = (key, amount) =>
+  `<span data-count="${amount}" data-count-key="${key}">${money(amount)}</span>`;
 
 /* Önceki/sonraki okları ve geçmişe doğrudan gitmek için tarih seçici. */
 export function dateNav({ action, picker, value, label, canGoNext }) {

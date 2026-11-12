@@ -1,14 +1,36 @@
-import { DAYS_IN_WEEK, PRAYERS } from "../config.js";
+import { DAYS_IN_WEEK, MIN_STREAK_TO_SHOW, PERCENT, PRAYERS, TASK_ICONS } from "../config.js";
 import { todayISO, weekStart } from "../dates.js";
 import { dayEarnings, dayOf, sumValues, weekSummary } from "../earnings.js";
 import { esc, formatLongDate, formatWeekday, money } from "../format.js";
+import { dayProgress, encouragement, readingStreak } from "../motivation.js";
 import { state } from "../state.js";
-import { checkButton, dateNav } from "./shared.js";
+import { mascot, starIcon } from "./mascot.js";
+import { checkButton, countedMoney, dateNav } from "./shared.js";
 
 function readingHint(week, rewards) {
   if (week.fullWeek) return `Haftanın her günü okudun. Ödül ${money(rewards.reading.fullWeek)} oldu!`;
   const remaining = DAYS_IN_WEEK - week.readingDays;
-  return `Bu hafta ${week.readingDays}/${DAYS_IN_WEEK} gün. ${remaining} gün daha okursan ödül ${money(rewards.reading.fullWeek)} olur.`;
+  return `${remaining} gün daha okursan bu haftanın kitap ödülü ${money(rewards.reading.fullWeek)} olur.`;
+}
+
+function hero(progress) {
+  return `<section class="card hero">
+    ${mascot({ party: progress.done === progress.total })}
+    <div class="hero-body">
+      <h2>${esc(encouragement(progress.ratio))}</h2>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${progress.total}" aria-valuenow="${progress.done}" aria-label="Günün görevleri">
+        <div class="progress-fill" style="width:${progress.ratio * PERCENT}%"></div>
+      </div>
+      <p class="strong num">${progress.done}/${progress.total} görev tamam</p>
+    </div>
+  </section>`;
+}
+
+function readingStars(week, selectedISO) {
+  return `<div class="stars" aria-label="Bu hafta okunan günler">
+    ${week.rows.map((r) => `<div class="star ${r.day.reading ? "on" : ""}" ${r.iso === selectedISO ? 'data-fresh-on="toggle-reading"' : ""}>
+      ${starIcon()}<span>${esc(formatWeekday(r.iso))}</span></div>`).join("")}
+  </div>`;
 }
 
 export function renderToday() {
@@ -17,24 +39,23 @@ export function renderToday() {
   const day = dayOf(state.days, iso);
   const week = weekSummary(weekStart(iso), state.days, rewards);
   const isToday = iso === todayISO();
+  const streak = readingStreak(state.days, iso);
 
   return `
     ${dateNav({ action: "shift-day", picker: "day", value: iso, label: `${isToday ? "Bugün · " : ""}${formatLongDate(iso)}`, canGoNext: !isToday })}
+    ${hero(dayProgress(day))}
     <div class="tiles">
-      <div class="tile coin"><div class="label">Bu günün kazancı</div><div class="value num">${money(sumValues(dayEarnings(day, rewards)))}</div></div>
-      <div class="tile"><div class="label">Bu haftanın kazancı</div><div class="value num">${money(week.total)}</div></div>
+      <div class="tile coin"><div class="label">Bu günün kazancı</div><div class="value num">${countedMoney("day", sumValues(dayEarnings(day, rewards)))}</div></div>
+      <div class="tile"><div class="label">Bu haftanın kazancı</div><div class="value num">${countedMoney("week", week.total)}</div></div>
     </div>
+    ${checkButton({ action: "toggle-homework", task: "homework", icon: TASK_ICONS.homework, pressed: day.homework, title: "Ödevlerimi yaptım", reward: rewards.homework.amount })}
     <section class="card">
-      <h3>Ödev</h3>
-      ${checkButton({ action: "toggle-homework", pressed: day.homework, title: "Ödevlerimi yaptım", reward: rewards.homework.amount })}
-    </section>
-    <section class="card">
-      <h3>Kitap</h3>
-      ${checkButton({ action: "toggle-reading", pressed: day.reading, title: "Kitap okudum", reward: rewards.reading.amount })}
-      <div class="dots" aria-label="Bu hafta okunan günler">
-        ${week.rows.map((r) => `<div class="dot ${r.day.reading ? "on" : ""}">${esc(formatWeekday(r.iso))}</div>`).join("")}
+      ${checkButton({ action: "toggle-reading", task: "reading", icon: TASK_ICONS.reading, pressed: day.reading, title: "Kitap okudum", reward: rewards.reading.amount })}
+      ${readingStars(week, iso)}
+      <div class="row spread">
+        <p class="muted strong">${esc(readingHint(week, rewards))}</p>
+        ${streak >= MIN_STREAK_TO_SHOW ? `<span class="pill coin num">${streak} gün üst üste</span>` : ""}
       </div>
-      <p class="muted">${esc(readingHint(week, rewards))}</p>
     </section>
     <section class="card">
       <div class="row spread"><h3>Namaz</h3><span class="pill num">${day.prayers.length}/${PRAYERS.length} vakit · her vakit +${money(rewards.prayer.amount)}</span></div>

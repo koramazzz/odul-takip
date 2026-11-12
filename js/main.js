@@ -1,8 +1,12 @@
 import { DAYS_IN_WEEK, SYNC_MESSAGES } from "./config.js";
 import { addDays, todayISO } from "./dates.js";
 import { dayOf } from "./earnings.js";
+import { celebrate } from "./effects/celebrate.js";
+import { animateCounts } from "./effects/countup.js";
 import { buildExamFromDraft, draftFromExam, newExamDraft, parseCount } from "./exams.js";
 import { esc } from "./format.js";
+import { progressSnapshot } from "./motivation.js";
+import { isMuted, toggleMuted } from "./preferences.js";
 import * as repository from "./repository.js";
 import { state } from "./state.js";
 import { store } from "./store.js";
@@ -14,17 +18,22 @@ import { renderSettings } from "./views/settings.js";
 import { renderToday } from "./views/today.js";
 
 const ROUTES = [
-  { id: "bugun", label: "Bugün", render: renderToday },
-  { id: "kazanc", label: "Kazanç", render: renderEarnings },
-  { id: "sinavlar", label: "Sınavlar", render: renderExams },
-  { id: "gelisim", label: "Gelişim", render: renderProgress },
-  { id: "ayarlar", label: "Ayarlar", render: renderSettings },
+  { id: "bugun", label: "Bugün", icon: "⭐", render: renderToday },
+  { id: "kazanc", label: "Kazanç", icon: "💰", render: renderEarnings },
+  { id: "sinavlar", label: "Sınavlar", icon: "📝", render: renderExams },
+  { id: "gelisim", label: "Gelişim", icon: "📈", render: renderProgress },
+  { id: "ayarlar", label: "Ayarlar", icon: "⚙️", render: renderSettings },
 ];
 const DEFAULT_ROUTE = ROUTES[0];
 
 const app = document.getElementById("app");
 const tabs = document.getElementById("tabs");
 const banner = document.getElementById("banner");
+const soundToggle = document.getElementById("sound-toggle");
+const SOUND_TOGGLE = {
+  on: { icon: "🔊", label: "Sesi kapat" },
+  off: { icon: "🔇", label: "Sesi aç" },
+};
 
 /* ---------- Çizim ---------- */
 function renderBanner() {
@@ -35,7 +44,13 @@ function renderBanner() {
 function renderTabs() {
   tabs.hidden = !state.session;
   tabs.innerHTML = ROUTES.map((r) =>
-    `<a class="tab" href="#${r.id}" ${r.id === state.route.id ? 'aria-current="page"' : ""}>${esc(r.label)}</a>`).join("");
+    `<a class="tab" href="#${r.id}" ${r.id === state.route.id ? 'aria-current="page"' : ""}><span aria-hidden="true">${r.icon}</span> ${esc(r.label)}</a>`).join("");
+}
+
+function renderSoundToggle() {
+  const { icon, label } = isMuted() ? SOUND_TOGGLE.off : SOUND_TOGGLE.on;
+  soundToggle.textContent = icon;
+  soundToggle.setAttribute("aria-label", label);
 }
 
 function render() {
@@ -43,6 +58,7 @@ function render() {
   renderTabs();
   renderBanner();
   app.innerHTML = state.session ? state.route.render() : renderLogin();
+  animateCounts(app);
 }
 
 /* Başka cihazdan gelen güncelleme, form doldurulurken yazılanı silmesin. */
@@ -145,11 +161,35 @@ async function submitLogin(form) {
 const formHandlers = { exam: submitExam, settings: submitSettings, login: submitLogin };
 
 /* ---------- Olaylar ---------- */
+const snapshot = () => progressSnapshot(state.days, state.selectedDate, state.settings.rewards);
+
+function centerOf(el) {
+  const rect = el.getBoundingClientRect();
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+/* Yeniden çizimden sonra, az önce dokunulan düğmeyi ve ona bağlı öğeleri canlandırır. */
+function animateTouched({ action, prayer }) {
+  const prayerFilter = prayer ? `[data-prayer="${prayer}"]` : "";
+  app.querySelector(`[data-action="${action}"]${prayerFilter}[aria-pressed="true"]`)?.classList.add("pop");
+  app.querySelectorAll(`[data-fresh-on="${action}"]`).forEach((el) => el.classList.add("fresh"));
+}
+
 app.addEventListener("click", async (event) => {
   const el = event.target.closest("[data-action]");
   if (!el || el.disabled) return;
-  await actions[el.dataset.action](el);
+  const touched = { ...el.dataset };
+  const origin = centerOf(el);
+  const before = snapshot();
+  await actions[touched.action](el);
   render();
+  animateTouched(touched);
+  celebrate(before, snapshot(), origin);
+});
+
+soundToggle.addEventListener("click", () => {
+  toggleMuted();
+  renderSoundToggle();
 });
 
 app.addEventListener("submit", async (event) => {
@@ -196,6 +236,7 @@ function startData() {
 
 async function boot() {
   window.addEventListener("hashchange", applyRoute);
+  renderSoundToggle();
   applyRoute();
   state.session = await repository.getSession();
   render();

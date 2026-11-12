@@ -14,11 +14,16 @@
 </head>
 <body>
 <div class="page">
-  <header><h1>YunulosTakip</h1></header>
+  <header class="topbar">
+    <h1>YunulosTakip</h1>
+    <button type="button" class="icon-btn" id="sound-toggle"></button>
+  </header>
   <nav class="tabs" id="tabs" aria-label="Bölümler"></nav>
   <div id="banner" role="status"></div>
   <main id="app" class="stack"></main>
 </div>
+<div class="fx-layer" aria-hidden="true"><canvas id="confetti"></canvas></div>
+<div id="fx" class="fx-layer" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
