@@ -3,7 +3,8 @@ import { todayISO } from "./dates.js";
 
 export const questionCount = (r) => r.correct + r.wrong + r.blank;
 export const successRate = (r) => (questionCount(r) ? (r.correct / questionCount(r)) * PERCENT : 0);
-export const kindLabel = (id) => EXAM_KINDS.find((k) => k.id === id)?.label ?? id;
+export const examKind = (id) => EXAM_KINDS.find((k) => k.id === id);
+export const kindLabel = (id) => examKind(id)?.label ?? id;
 export const byDateAsc = (a, b) => a.date.localeCompare(b.date);
 
 export function examTotals(exam) {
@@ -35,7 +36,13 @@ export function draftFromExam(exam) {
   return { id: exam.id, date: exam.date, kind: exam.kind, name: exam.name, rows };
 }
 
-export const draftSubjects = (draft, subjects) => [...new Set([...subjects, ...Object.keys(draft.rows)])];
+/* Formda gösterilecek satırlar. Ders ders girilmeyen türlerde tek satır vardır ve adı türün adıdır. */
+export function draftSubjects(draft, subjects) {
+  const kind = examKind(draft.kind);
+  if (!kind.bySubject) return [kind.label];
+  const otherKindRows = EXAM_KINDS.filter((k) => !k.bySubject).map((k) => k.label);
+  return [...new Set([...subjects, ...Object.keys(draft.rows)])].filter((s) => !otherKindRows.includes(s));
+}
 
 /* Boş alan 0 sayılır; geçersiz değer null döner. */
 export function parseCount(text) {
@@ -56,6 +63,6 @@ export function buildExamFromDraft(draft, subjects) {
     const mistakes = (row.mistakes ?? "").split(",").map((t) => t.trim()).filter(Boolean);
     results.push({ subject, ...counts, mistakes });
   }
-  if (!results.length) return { error: "En az bir ders için doğru, yanlış ya da boş sayısı gir." };
+  if (!results.length) return { error: "Doğru, yanlış ya da boş sayısı gir." };
   return { exam: { date: draft.date, kind: draft.kind, name: draft.name.trim() || kindLabel(draft.kind), results } };
 }

@@ -25,9 +25,10 @@ export const PRAYERS = [
   { id: "yatsi", label: "Yatsı" },
 ];
 
+/* `bySubject`: sonuçlar ders ders mi girilir, yoksa sınavın tamamı için tek satır mı. */
 export const EXAM_KINDS = [
-  { id: "deneme", label: "Deneme sınavı" },
-  { id: "kitap", label: "Kitap sınavı" },
+  { id: "deneme", label: "Deneme sınavı", bySubject: true, hint: "Yalnızca sınavda olan dersleri doldur. Hata yapılan konuları virgülle ayır." },
+  { id: "kitap", label: "Kitap sınavı", bySubject: false, hint: "Sınavın toplam doğru, yanlış ve boş sayısını gir. Hata yapılan yerleri virgülle ayır." },
 ];
 export const ALL_KINDS = "hepsi";
 

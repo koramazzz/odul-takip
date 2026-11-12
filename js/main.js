@@ -206,6 +206,7 @@ app.addEventListener("input", (event) => {
 });
 
 app.addEventListener("change", (event) => {
+  if (event.target.dataset.draft === "kind") { render(); return; } // tür değişince formun satırları değişir
   const { pick } = event.target.dataset;
   const iso = event.target.value;
   if (!pick || !iso) return;

@@ -1,6 +1,6 @@
 import { EXAM_KINDS } from "../config.js";
 import { todayISO } from "../dates.js";
-import { byDateAsc, draftSubjects, examTotals, kindLabel, successRate } from "../exams.js";
+import { byDateAsc, draftSubjects, examKind, examTotals, kindLabel, successRate } from "../exams.js";
 import { esc, formatLongDate, percent } from "../format.js";
 import { state } from "../state.js";
 import { formError } from "./shared.js";
@@ -21,8 +21,8 @@ function subjectRow(subject, index, row) {
   return `<div class="subject-row">
     <div class="name">${esc(subject)}</div>
     ${COUNT_FIELDS.map((f) => countInput(index, subject, f, row)).join("")}
-    <div class="field wide"><label for="exam-mistakes-${index}">Hata yapılan konular</label>
-      <input id="exam-mistakes-${index}" type="text" data-subject="${esc(subject)}" data-field="mistakes" placeholder="kesirler, problemler" value="${esc(row.mistakes ?? "")}"></div>
+    <div class="field wide"><label for="exam-mistakes-${index}">Hatalar</label>
+      <input id="exam-mistakes-${index}" type="text" data-subject="${esc(subject)}" data-field="mistakes" placeholder="virgülle ayır" value="${esc(row.mistakes ?? "")}"></div>
   </div>`;
 }
 
@@ -36,7 +36,7 @@ function renderExamForm() {
         <select id="exam-kind" data-draft="kind">${EXAM_KINDS.map((k) => `<option value="${k.id}" ${k.id === draft.kind ? "selected" : ""}>${esc(k.label)}</option>`).join("")}</select></div>
       <div class="field"><label for="exam-name">Sınavın adı</label><input id="exam-name" type="text" data-draft="name" placeholder="Yayın ya da kitap adı" value="${esc(draft.name)}"></div>
     </div>
-    <p class="muted">Yalnızca sınavda olan dersleri doldur. Hata yapılan konuları virgülle ayır.</p>
+    <p class="muted">${esc(examKind(draft.kind).hint)}</p>
     <div>${draftSubjects(draft, state.settings.subjects).map((subject, i) => subjectRow(subject, i, draft.rows[subject] ?? {})).join("")}</div>
     ${formError(state.formError)}
     <div class="row">
