@@ -16,7 +16,7 @@ import { renderEarnings } from "./views/earnings.js";
 import { renderExams } from "./views/exams.js";
 import { renderLogin } from "./views/login.js";
 import { renderProgress } from "./views/progress.js";
-import { renderSettings } from "./views/settings.js";
+import { renderSettings, rewardFields } from "./views/settings.js";
 import { renderToday } from "./views/today.js";
 
 const ROUTES = [
@@ -103,8 +103,7 @@ async function signOut() {
 }
 
 const actions = {
-  "toggle-homework": () => toggleFlag("homework"),
-  "toggle-reading": () => toggleFlag("reading"),
+  "toggle-task": (el) => toggleFlag(el.dataset.task),
   "toggle-prayer": (el) => togglePrayer(el.dataset.prayer),
   "shift-day": (el) => { state.selectedDate = addDays(state.selectedDate, Number(el.dataset.step)); },
   "shift-week": (el) => { state.weekAnchor = addDays(state.weekAnchor, Number(el.dataset.step) * DAYS_IN_WEEK); },
@@ -133,20 +132,14 @@ function submitExam() {
 
 function submitSettings(form) {
   const data = new FormData(form);
-  const amounts = Object.fromEntries(["homework", "reading", "fullWeek", "prayer", "goalAmount"].map((name) => [name, parseCount(data.get(name))]));
+  const rewards = structuredClone(state.settings.rewards);
+  for (const { key, field, name } of rewardFields(rewards)) rewards[key][field] = parseCount(data.get(name));
+  const goalAmount = parseCount(data.get("goalAmount"));
   const subjects = [...new Set(String(data.get("subjects")).split("\n").map((s) => s.trim()).filter(Boolean))];
-  if (Object.values(amounts).includes(null)) { state.formError = "Tutarlar 0 ya da daha büyük tam sayı olmalı."; return; }
+  const amounts = [goalAmount, ...rewardFields(rewards).map(({ key, field }) => rewards[key][field])];
+  if (amounts.includes(null)) { state.formError = "Tutarlar 0 ya da daha büyük tam sayı olmalı."; return; }
   if (!subjects.length) { state.formError = "En az bir ders yaz."; return; }
-  const { rewards } = state.settings;
-  store.saveSettings({
-    rewards: {
-      homework: { ...rewards.homework, amount: amounts.homework },
-      reading: { ...rewards.reading, amount: amounts.reading, fullWeek: amounts.fullWeek },
-      prayer: { ...rewards.prayer, amount: amounts.prayer },
-    },
-    subjects,
-    goal: { name: String(data.get("goalName")).trim(), amount: amounts.goalAmount },
-  });
+  store.saveSettings({ rewards, subjects, goal: { name: String(data.get("goalName")).trim(), amount: goalAmount } });
   state.formError = "";
   state.settingsSaved = true;
 }
@@ -177,10 +170,10 @@ function centerOf(el) {
 }
 
 /* Yeniden çizimden sonra, az önce dokunulan düğmeyi ve ona bağlı öğeleri canlandırır. */
-function animateTouched({ action, prayer }) {
-  const prayerFilter = prayer ? `[data-prayer="${prayer}"]` : "";
-  app.querySelector(`[data-action="${action}"]${prayerFilter}[aria-pressed="true"]`)?.classList.add("pop");
-  app.querySelectorAll(`[data-fresh-on="${action}"]`).forEach((el) => el.classList.add("fresh"));
+function animateTouched({ action, task, prayer }) {
+  const which = task ? `[data-task="${task}"]` : prayer ? `[data-prayer="${prayer}"]` : "";
+  app.querySelector(`[data-action="${action}"]${which}[aria-pressed="true"]`)?.classList.add("pop");
+  if (task) app.querySelectorAll(`[data-fresh-on="${task}"]`).forEach((el) => el.classList.add("fresh"));
 }
 
 app.addEventListener("click", async (event) => {

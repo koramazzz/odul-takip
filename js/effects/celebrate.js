@@ -1,8 +1,8 @@
 /* Bir görev işaretlenince ne kutlanacağına karar verir: ses, konfeti, uçan ödül, bildirim. */
 import { badgeById } from "../badges.js";
-import { CONFETTI, FLOAT_REWARD_MS, MILESTONES, MILESTONE_SUMMARIES, NEW_BADGE_SOUND, TOAST_MS } from "../config.js";
+import { CONFETTI, FLOAT_REWARD_MS, MILESTONE_SUMMARIES, NEW_BADGE_SOUND, TOAST_MS } from "../config.js";
 import { esc, money } from "../format.js";
-import { newMilestones } from "../motivation.js";
+import { describeMilestone, newMilestones } from "../motivation.js";
 import { burst } from "./confetti.js";
 import { playSound } from "./sound.js";
 
@@ -56,7 +56,7 @@ export function celebrate(before, after, origin) {
   }
   const [milestone] = progressed ? newMilestones(before, after) : [];
   if (milestone) {
-    const { title, scope, sound } = MILESTONES[milestone];
+    const { title, scope, sound } = describeMilestone(milestone);
     bigCelebration(title, MILESTONE_SUMMARIES[scope]({ day: money(after.dayTotal), week: money(after.weekTotal) }), sound);
     return;
   }

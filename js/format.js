@@ -3,7 +3,7 @@ import { fromISO } from "./dates.js";
 
 const longDate = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long" });
 const shortDate = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short" });
-const rowDate = new Intl.DateTimeFormat(LOCALE, { weekday: "short", day: "numeric", month: "short" });
+const rowDate = new Intl.DateTimeFormat(LOCALE, { weekday: "short", day: "numeric" });
 const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: "short" });
 const number = new Intl.NumberFormat(LOCALE);
 

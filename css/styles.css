@@ -16,6 +16,7 @@
   --homework: #4f6df5;
   --reading: #f2762e;
   --prayer: #0fa293;
+  --test: #c2338f;
   --good: #14995a;
   --bad: #d1432b;
   --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
@@ -30,7 +31,7 @@
     --bg: #101a2e; --bg-dot: #18243d; --surface: #1a2742; --ink: #eaf0fb; --muted: #a3b1cc;
     --line: #2e3d5e; --primary: #2fc27c; --primary-edge: #1b8a55; --on-primary: #06231a;
     --coin: #ffc533; --coin-edge: #b88600; --coin-soft: #3b3113;
-    --homework: #8497ff; --reading: #ff9455; --prayer: #3fcfbf; --good: #4fd491; --bad: #ff8a73;
+    --homework: #8497ff; --reading: #ff9455; --prayer: #3fcfbf; --test: #f07cc4; --good: #4fd491; --bad: #ff8a73;
     color-scheme: dark;
   }
 }
@@ -38,7 +39,7 @@
   --bg: #101a2e; --bg-dot: #18243d; --surface: #1a2742; --ink: #eaf0fb; --muted: #a3b1cc;
   --line: #2e3d5e; --primary: #2fc27c; --primary-edge: #1b8a55; --on-primary: #06231a;
   --coin: #ffc533; --coin-edge: #b88600; --coin-soft: #3b3113;
-  --homework: #8497ff; --reading: #ff9455; --prayer: #3fcfbf; --good: #4fd491; --bad: #ff8a73;
+  --homework: #8497ff; --reading: #ff9455; --prayer: #3fcfbf; --test: #f07cc4; --good: #4fd491; --bad: #ff8a73;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -125,6 +126,7 @@ button { cursor: pointer; }
 }
 .check.homework { --tone: var(--homework); }
 .check.reading { --tone: var(--reading); }
+.check.test { --tone: var(--test); }
 .check .icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: 1.6rem; background: color-mix(in srgb, var(--tone) 18%, var(--surface)); }
 .check .grow { flex: 1; }
 .check .reward { font-family: var(--font-display); color: var(--muted); white-space: nowrap; }
@@ -156,8 +158,11 @@ button { cursor: pointer; }
 .star.on { color: var(--ink); }
 .star.on svg { fill: var(--coin); stroke: var(--coin-edge); }
 .stars.homework .star.on svg { fill: var(--homework); stroke: var(--homework); }
+.stars.test .star.on svg { fill: var(--test); stroke: var(--test); }
 
 @media (max-width: 400px) {
+  .tile { padding: 10px; }
+  .tile .value { font-size: 1.25rem; }
   .check { gap: 8px; padding: 8px 10px; font-size: 1rem; }
   .check .icon { width: 36px; height: 36px; font-size: 1.2rem; }
   .check .box { width: 32px; height: 32px; }

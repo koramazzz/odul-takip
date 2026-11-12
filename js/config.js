@@ -15,8 +15,6 @@ export const PERCENT = 100;
 export const DAYS_IN_WEEK = 7;
 export const WEEK_STARTS_ON = 1; // Pazartesi (Date.getDay değeri)
 
-export const TASK_ICONS = { homework: "✏️", reading: "📚" };
-
 export const PRAYERS = [
   { id: "sabah", label: "Sabah" },
   { id: "ogle", label: "Öğle" },
@@ -36,6 +34,7 @@ export const DEFAULT_SETTINGS = {
   rewards: {
     homework: { amount: 50, payer: "Baba" },
     reading: { amount: 50, fullWeek: 500, payer: "Abi" },
+    test: { amount: 20, fullWeek: 210, questions: 10, payer: "Abi" }, // her dersten `questions` soru
     prayer: { amount: 10, payer: "Abi" },
   },
   subjects: ["Türkçe", "Matematik", "Fen Bilimleri", "Sosyal Bilgiler", "İngilizce", "Din Kültürü"],
@@ -63,7 +62,7 @@ export const ENCOURAGEMENTS = [
 
 export const MILESTONES = {
   dayComplete: { title: "Günün tüm görevleri tamam!", scope: "day", sound: "fanfare" },
-  fullWeek: { title: "7 gün kitap okudun!", scope: "week", sound: "fanfare" },
+  fullWeek: { scope: "week", sound: "fanfare" }, // başlığı görevden gelir (tasks.js)
   allPrayers: { title: "5 vakit tamam!", scope: "day", sound: "fanfare" },
 };
 /* Kutlama bildiriminin ikinci satırı: anın kapsadığı süreye göre. */

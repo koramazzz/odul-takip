@@ -1,38 +1,37 @@
 import { DAYS_IN_WEEK } from "./config.js";
 import { weekDates, weekStart } from "./dates.js";
+import { DAILY_TASKS } from "./tasks.js";
 
-export const emptyDay = () => ({ homework: false, reading: false, prayers: [] });
+export const emptyDay = () => ({ ...Object.fromEntries(DAILY_TASKS.map((task) => [task.id, false])), prayers: [] });
 export const dayOf = (days, iso) => ({ ...emptyDay(), ...(days[iso] ?? {}) });
 export const sumValues = (obj) => Object.values(obj).reduce((a, b) => a + b, 0);
 
 export function dayEarnings(day, rewards) {
-  return {
-    homework: day.homework ? rewards.homework.amount : 0,
-    reading: day.reading ? rewards.reading.amount : 0,
-    prayer: day.prayers.length * rewards.prayer.amount,
-  };
+  const earned = Object.fromEntries(DAILY_TASKS.map((task) => [task.id, day[task.id] ? rewards[task.id].amount : 0]));
+  return { ...earned, prayer: day.prayers.length * rewards.prayer.amount };
 }
 
-/* Haftanın her günü kitap okunduysa kitap ödülü günlük toplam yerine tam hafta tutarı olur. */
+/* Bir görev haftanın her günü yapıldıysa ve ödülünde `fullWeek` varsa, günlük toplam yerine o tutar sayılır. */
 export function weekSummary(startISO, days, rewards) {
   const rows = weekDates(startISO).map((iso) => {
     const day = dayOf(days, iso);
     return { iso, day, earned: dayEarnings(day, rewards) };
   });
   const sumOf = (key) => rows.reduce((a, r) => a + r.earned[key], 0);
-  const readingDays = rows.filter((r) => r.day.reading).length;
-  const fullWeek = readingDays === DAYS_IN_WEEK;
-  const totals = {
-    homework: sumOf("homework"),
-    reading: fullWeek ? rewards.reading.fullWeek : sumOf("reading"),
-    prayer: sumOf("prayer"),
-  };
+  const daysDone = Object.fromEntries(DAILY_TASKS.map((task) => [task.id, rows.filter((r) => r.day[task.id]).length]));
+  const fullWeekTasks = DAILY_TASKS
+    .filter((task) => rewards[task.id].fullWeek !== undefined && daysDone[task.id] === DAYS_IN_WEEK)
+    .map((task) => task.id);
+  const totals = { prayer: sumOf("prayer") };
+  for (const task of DAILY_TASKS) {
+    totals[task.id] = fullWeekTasks.includes(task.id) ? rewards[task.id].fullWeek : sumOf(task.id);
+  }
   const byPayer = {};
   for (const [key, amount] of Object.entries(totals)) {
     const { payer } = rewards[key];
     byPayer[payer] = (byPayer[payer] ?? 0) + amount;
   }
-  return { rows, readingDays, fullWeek, totals, byPayer, total: sumValues(totals) };
+  return { rows, daysDone, fullWeekTasks, totals, byPayer, total: sumValues(totals) };
 }
 
 export function allTimeTotal(days, rewards) {

@@ -18,6 +18,7 @@ create table public.days (
   date date primary key,
   homework boolean not null default false,
   reading boolean not null default false,
+  test boolean not null default false,
   prayers text[] not null default '{}'
 );
 

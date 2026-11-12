@@ -21,7 +21,7 @@ export async function signOut() {
 }
 
 export async function fetchDays() {
-  return unwrap(await client.from(TABLES.days).select("date, homework, reading, prayers"));
+  return unwrap(await client.from(TABLES.days).select("date, homework, reading, test, prayers"));
 }
 
 export async function saveDay(row) {

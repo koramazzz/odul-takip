@@ -1,9 +1,9 @@
 import { todayISO } from "../dates.js";
 import { esc, money } from "../format.js";
 
-/* `task` hem görevin rengini (CSS sınıfı) hem simgesini belirler. */
-export function checkButton({ action, task, icon, pressed, title, reward }) {
-  return `<button type="button" class="check ${task}" data-action="${action}" aria-pressed="${pressed}">
+/* Günlük görev düğmesi. `task` görevin kimliğidir; rengini (CSS sınıfı) de o belirler. */
+export function checkButton({ task, icon, pressed, title, reward }) {
+  return `<button type="button" class="check ${task}" data-action="toggle-task" data-task="${task}" aria-pressed="${pressed}">
     <span class="icon" aria-hidden="true">${icon}</span>
     <span class="grow">${esc(title)}</span>
     <span class="reward num">+${money(reward)}</span>

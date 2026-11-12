@@ -1,17 +1,12 @@
-import { DAYS_IN_WEEK, MIN_STREAK_TO_SHOW, PERCENT, PRAYERS, TASK_ICONS } from "../config.js";
+import { DAYS_IN_WEEK, MIN_STREAK_TO_SHOW, PERCENT, PRAYERS } from "../config.js";
 import { todayISO, weekStart } from "../dates.js";
 import { dayEarnings, dayOf, sumValues, weekSummary } from "../earnings.js";
 import { esc, formatLongDate, formatWeekday, money } from "../format.js";
-import { dayProgress, encouragement, readingStreak } from "../motivation.js";
+import { dayProgress, encouragement, taskStreak } from "../motivation.js";
 import { state } from "../state.js";
+import { DAILY_TASKS } from "../tasks.js";
 import { mascot, starIcon } from "./mascot.js";
 import { checkButton, countedMoney, dateNav } from "./shared.js";
-
-function readingHint(week, rewards) {
-  if (week.fullWeek) return `Haftanın her günü okudun. Ödül ${money(rewards.reading.fullWeek)} oldu!`;
-  const remaining = DAYS_IN_WEEK - week.readingDays;
-  return `${remaining} gün daha okursan bu haftanın kitap ödülü ${money(rewards.reading.fullWeek)} olur.`;
-}
 
 function hero(progress) {
   return `<section class="card hero">
@@ -26,15 +21,35 @@ function hero(progress) {
   </section>`;
 }
 
-/* Haftanın yedi günü için yıldız sırası; `task` günün hangi görevine bakılacağını ve rengi belirler. */
-function weekStars({ week, task, action, label, selectedISO }) {
-  return `<div class="stars ${task}" aria-label="${label}">
-    ${week.rows.map((r) => `<div class="star ${r.day[task] ? "on" : ""}" ${r.iso === selectedISO ? `data-fresh-on="${action}"` : ""}>
+/* Haftanın yedi günü için yıldız sırası; görevin rengini alır. */
+function weekStars(task, week, selectedISO) {
+  return `<div class="stars ${task.id}" aria-label="${task.weekLabel}">
+    ${week.rows.map((r) => `<div class="star ${r.day[task.id] ? "on" : ""}" ${r.iso === selectedISO ? `data-fresh-on="${task.id}"` : ""}>
       ${starIcon()}<span>${esc(formatWeekday(r.iso))}</span></div>`).join("")}
   </div>`;
 }
 
-const daysDone = (week, task) => week.rows.filter((r) => r.day[task]).length;
+/* Haftalık satır: tam hafta ödülü olan görevde hedefe kalan günü, olmayanda yapılan günü ve kazancı söyler. */
+function weekLine(task, week, reward) {
+  const count = week.daysDone[task.id];
+  if (reward.fullWeek === undefined) return `${task.weekLine(count)} · ${money(week.totals[task.id])}`;
+  return count === DAYS_IN_WEEK
+    ? task.bonusDone(money(reward.fullWeek))
+    : task.bonusHint(DAYS_IN_WEEK - count, money(reward.fullWeek));
+}
+
+function taskCard(task, { day, week, rewards, iso }) {
+  const reward = rewards[task.id];
+  const streak = task.showStreak ? taskStreak(state.days, iso, task.id) : 0;
+  return `<section class="card">
+    ${checkButton({ task: task.id, icon: task.icon, pressed: day[task.id], title: task.title(reward), reward: reward.amount })}
+    ${weekStars(task, week, iso)}
+    <div class="row spread">
+      <p class="muted strong num">${esc(weekLine(task, week, reward))}</p>
+      ${streak >= MIN_STREAK_TO_SHOW ? `<span class="pill coin num">${streak} gün üst üste</span>` : ""}
+    </div>
+  </section>`;
+}
 
 export function renderToday() {
   const { rewards } = state.settings;
@@ -42,7 +57,6 @@ export function renderToday() {
   const day = dayOf(state.days, iso);
   const week = weekSummary(weekStart(iso), state.days, rewards);
   const isToday = iso === todayISO();
-  const streak = readingStreak(state.days, iso);
 
   return `
     ${dateNav({ action: "shift-day", picker: "day", value: iso, label: `${isToday ? "Bugün · " : ""}${formatLongDate(iso)}`, canGoNext: !isToday })}
@@ -51,19 +65,7 @@ export function renderToday() {
       <div class="tile coin"><div class="label">Bu günün kazancı</div><div class="value num">${countedMoney("day", sumValues(dayEarnings(day, rewards)))}</div></div>
       <div class="tile"><div class="label">Bu haftanın kazancı</div><div class="value num">${countedMoney("week", week.total)}</div></div>
     </div>
-    <section class="card">
-      ${checkButton({ action: "toggle-homework", task: "homework", icon: TASK_ICONS.homework, pressed: day.homework, title: "Ödevlerimi yaptım", reward: rewards.homework.amount })}
-      ${weekStars({ week, task: "homework", action: "toggle-homework", label: "Bu hafta ödev yapılan günler", selectedISO: iso })}
-      <p class="muted strong num">Bu hafta ${daysDone(week, "homework")}/${DAYS_IN_WEEK} gün ödev yapıldı · ${money(week.totals.homework)}</p>
-    </section>
-    <section class="card">
-      ${checkButton({ action: "toggle-reading", task: "reading", icon: TASK_ICONS.reading, pressed: day.reading, title: "Kitap okudum", reward: rewards.reading.amount })}
-      ${weekStars({ week, task: "reading", action: "toggle-reading", label: "Bu hafta okunan günler", selectedISO: iso })}
-      <div class="row spread">
-        <p class="muted strong">${esc(readingHint(week, rewards))}</p>
-        ${streak >= MIN_STREAK_TO_SHOW ? `<span class="pill coin num">${streak} gün üst üste</span>` : ""}
-      </div>
-    </section>
+    ${DAILY_TASKS.map((task) => taskCard(task, { day, week, rewards, iso })).join("")}
     <section class="card">
       <div class="row spread"><h3>Namaz</h3><span class="pill num">${day.prayers.length}/${PRAYERS.length} vakit · her vakit +${money(rewards.prayer.amount)}</span></div>
       <div class="chips prayers">
