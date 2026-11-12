@@ -155,6 +155,7 @@ button { cursor: pointer; }
 .star svg { width: 34px; height: 34px; fill: var(--surface); stroke: var(--line); stroke-width: 2; stroke-linejoin: round; }
 .star.on { color: var(--ink); }
 .star.on svg { fill: var(--coin); stroke: var(--coin-edge); }
+.stars.homework .star.on svg { fill: var(--homework); stroke: var(--homework); }
 
 @media (max-width: 400px) {
   .check { gap: 8px; padding: 8px 10px; font-size: 1rem; }
