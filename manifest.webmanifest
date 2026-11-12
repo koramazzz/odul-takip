@@ -1,0 +1,13 @@
+{
+  "name": "Ödül ve Sınav Takibi",
+  "short_name": "Ödül Takibi",
+  "lang": "tr",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#eaf1ee",
+  "theme_color": "#0e7a5e",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
