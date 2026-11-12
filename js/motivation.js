@@ -1,7 +1,7 @@
 /* Günün ilerlemesi, cesaret sözleri, seri ve kutlanacak anlar. Saf hesap; ekrana dokunmaz. */
 import { ENCOURAGEMENTS, PRAYERS } from "./config.js";
 import { addDays, weekStart } from "./dates.js";
-import { dayOf, weekSummary } from "./earnings.js";
+import { dayEarnings, dayOf, sumValues, weekSummary } from "./earnings.js";
 
 const DAILY_TASK_COUNT = 2 + PRAYERS.length; // ödev + kitap + her vakit
 
@@ -31,6 +31,7 @@ export function progressSnapshot(days, iso, rewards) {
   return {
     iso,
     done: progress.done,
+    dayTotal: sumValues(dayEarnings(day, rewards)),
     weekTotal: week.total,
     reached: {
       dayComplete: progress.done === progress.total,

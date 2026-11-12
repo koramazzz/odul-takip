@@ -1,5 +1,5 @@
 /* Bir görev işaretlenince ne kutlanacağına karar verir: ses, konfeti, uçan ödül, bildirim. */
-import { CONFETTI, FLOAT_REWARD_MS, MILESTONES, TOAST_MS } from "../config.js";
+import { CONFETTI, FLOAT_REWARD_MS, MILESTONES, MILESTONE_SUMMARIES, TOAST_MS } from "../config.js";
 import { esc, money } from "../format.js";
 import { newMilestones } from "../motivation.js";
 import { burst } from "./confetti.js";
@@ -45,8 +45,8 @@ export function celebrate(before, after, origin) {
     burst(origin, CONFETTI.smallBurst);
     return;
   }
-  const { title, sound } = MILESTONES[milestone];
+  const { title, scope, sound } = MILESTONES[milestone];
   playSound(sound);
   burst(screenCenter(), CONFETTI.bigBurst);
-  showToast(title, `Bu hafta toplam ${money(after.weekTotal)} kazandın.`);
+  showToast(title, MILESTONE_SUMMARIES[scope]({ day: money(after.dayTotal), week: money(after.weekTotal) }));
 }

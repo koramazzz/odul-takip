@@ -60,9 +60,14 @@ export const ENCOURAGEMENTS = [
 ];
 
 export const MILESTONES = {
-  dayComplete: { title: "Günün tüm görevleri tamam!", sound: "fanfare" },
-  fullWeek: { title: "7 gün kitap okudun!", sound: "fanfare" },
-  allPrayers: { title: "5 vakit tamam!", sound: "fanfare" },
+  dayComplete: { title: "Günün tüm görevleri tamam!", scope: "day", sound: "fanfare" },
+  fullWeek: { title: "7 gün kitap okudun!", scope: "week", sound: "fanfare" },
+  allPrayers: { title: "5 vakit tamam!", scope: "day", sound: "fanfare" },
+};
+/* Kutlama bildiriminin ikinci satırı: anın kapsadığı süreye göre. */
+export const MILESTONE_SUMMARIES = {
+  day: (totals) => `Günün her şeyini yaptın! Günün kazancı ${totals.day}.`,
+  week: (totals) => `Bu hafta toplam ${totals.week} kazandın.`,
 };
 export const MIN_STREAK_TO_SHOW = 2;
 
