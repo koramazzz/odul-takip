@@ -1,4 +1,5 @@
 import { DAYS_IN_WEEK, SYNC_MESSAGES } from "./config.js";
+import { computeStats, unlockedBadgeIds } from "./badges.js";
 import { addDays, todayISO } from "./dates.js";
 import { dayOf } from "./earnings.js";
 import { celebrate } from "./effects/celebrate.js";
@@ -10,6 +11,7 @@ import { isMuted, toggleMuted } from "./preferences.js";
 import * as repository from "./repository.js";
 import { state } from "./state.js";
 import { store } from "./store.js";
+import { renderBadges } from "./views/badges.js";
 import { renderEarnings } from "./views/earnings.js";
 import { renderExams } from "./views/exams.js";
 import { renderLogin } from "./views/login.js";
@@ -20,6 +22,7 @@ import { renderToday } from "./views/today.js";
 const ROUTES = [
   { id: "bugun", label: "Bugün", icon: "⭐", render: renderToday },
   { id: "kazanc", label: "Kazanç", icon: "💰", render: renderEarnings },
+  { id: "rozetler", label: "Rozetler", icon: "🏅", render: renderBadges },
   { id: "sinavlar", label: "Sınavlar", icon: "📝", render: renderExams },
   { id: "gelisim", label: "Gelişim", icon: "📈", render: renderProgress },
   { id: "ayarlar", label: "Ayarlar", icon: "⚙️", render: renderSettings },
@@ -130,7 +133,7 @@ function submitExam() {
 
 function submitSettings(form) {
   const data = new FormData(form);
-  const amounts = Object.fromEntries(["homework", "reading", "fullWeek", "prayer"].map((name) => [name, parseCount(data.get(name))]));
+  const amounts = Object.fromEntries(["homework", "reading", "fullWeek", "prayer", "goalAmount"].map((name) => [name, parseCount(data.get(name))]));
   const subjects = [...new Set(String(data.get("subjects")).split("\n").map((s) => s.trim()).filter(Boolean))];
   if (Object.values(amounts).includes(null)) { state.formError = "Tutarlar 0 ya da daha büyük tam sayı olmalı."; return; }
   if (!subjects.length) { state.formError = "En az bir ders yaz."; return; }
@@ -142,6 +145,7 @@ function submitSettings(form) {
       prayer: { ...rewards.prayer, amount: amounts.prayer },
     },
     subjects,
+    goal: { name: String(data.get("goalName")).trim(), amount: amounts.goalAmount },
   });
   state.formError = "";
   state.settingsSaved = true;
@@ -161,7 +165,11 @@ async function submitLogin(form) {
 const formHandlers = { exam: submitExam, settings: submitSettings, login: submitLogin };
 
 /* ---------- Olaylar ---------- */
-const snapshot = () => progressSnapshot(state.days, state.selectedDate, state.settings.rewards);
+const snapshot = () => ({
+  ...progressSnapshot(state.days, state.selectedDate, state.settings.rewards),
+  badges: unlockedBadgeIds(computeStats(state.days, state.exams, state.settings.rewards)),
+});
+const screenCenter = () => ({ x: window.innerWidth / 2, y: window.innerHeight / 3 });
 
 function centerOf(el) {
   const rect = el.getBoundingClientRect();
@@ -194,8 +202,10 @@ soundToggle.addEventListener("click", () => {
 
 app.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const before = snapshot();
   await formHandlers[event.target.dataset.form](event.target);
   render();
+  if (state.session) celebrate(before, snapshot(), screenCenter());
 });
 
 app.addEventListener("input", (event) => {

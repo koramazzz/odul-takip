@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS = {
     prayer: { amount: 10, payer: "Abi" },
   },
   subjects: ["Türkçe", "Matematik", "Fen Bilimleri", "Sosyal Bilgiler", "İngilizce", "Din Kültürü"],
+  goal: { name: "", amount: 0 }, // tutar 0 ise hedef belirlenmemiştir
 };
 
 export const SYNC = { loading: "loading", ready: "ready", failed: "failed", writeFailed: "writeFailed" };
@@ -71,6 +72,25 @@ export const MILESTONE_SUMMARIES = {
   week: (totals) => `Bu hafta toplam ${totals.week} kazandın.`,
 };
 export const MIN_STREAK_TO_SHOW = 2;
+
+/* Rozetler: `stat` badges.js içindeki computeStats alanıdır; değer `target`a ulaşınca rozet kazanılır. */
+export const BADGES = [
+  { id: "first-task", icon: "🌱", title: "İlk adım", description: "İlk görevini tamamla", stat: "tasksDone", target: 1, unit: "count" },
+  { id: "perfect-1", icon: "⭐", title: "Tam gün", description: "Bir günün tüm görevlerini bitir", stat: "perfectDays", target: 1, unit: "count" },
+  { id: "perfect-10", icon: "🌟", title: "On tam gün", description: "10 günün tüm görevlerini bitir", stat: "perfectDays", target: 10, unit: "count" },
+  { id: "reading-3", icon: "📖", title: "Okur", description: "3 gün üst üste kitap oku", stat: "bestReadingStreak", target: 3, unit: "count" },
+  { id: "reading-7", icon: "📚", title: "Kitap kurdu", description: "7 gün üst üste kitap oku", stat: "bestReadingStreak", target: 7, unit: "count" },
+  { id: "reading-30", icon: "🏆", title: "Kitap şampiyonu", description: "30 gün üst üste kitap oku", stat: "bestReadingStreak", target: 30, unit: "count" },
+  { id: "homework-10", icon: "✏️", title: "Çalışkan", description: "10 gün ödevlerini yap", stat: "homeworkDays", target: 10, unit: "count" },
+  { id: "homework-30", icon: "🎓", title: "Ödev ustası", description: "30 gün ödevlerini yap", stat: "homeworkDays", target: 30, unit: "count" },
+  { id: "prayer-1", icon: "🌙", title: "Beş vakit", description: "Bir günde beş vakti tamamla", stat: "fullPrayerDays", target: 1, unit: "count" },
+  { id: "prayer-7", icon: "🕌", title: "Yedi gün beş vakit", description: "7 gün beş vakti tamamla", stat: "fullPrayerDays", target: 7, unit: "count" },
+  { id: "earn-1000", icon: "💰", title: "İlk bin", description: "Toplam 1.000 TL kazan", stat: "totalEarned", target: 1000, unit: "money" },
+  { id: "earn-5000", icon: "💎", title: "Hazine", description: "Toplam 5.000 TL kazan", stat: "totalEarned", target: 5000, unit: "money" },
+  { id: "exam-1", icon: "📝", title: "İlk sınav", description: "İlk sınavını kaydet", stat: "examCount", target: 1, unit: "count" },
+  { id: "exam-90", icon: "🎯", title: "Tam isabet", description: "Bir sınavda %90 başarıya ulaş", stat: "bestExamRate", target: 90, unit: "percent" },
+];
+export const NEW_BADGE_SOUND = "fanfare";
 
 export const STORAGE_KEYS = { muted: "yunulostakip.muted" };
 export const TOAST_MS = 3200;

@@ -26,5 +26,6 @@ export function mergeSettings(saved) {
     rewards[key] = { ...defaults, ...(saved?.rewards?.[key] ?? {}) };
   }
   const subjects = Array.isArray(saved?.subjects) && saved.subjects.length ? saved.subjects : DEFAULT_SETTINGS.subjects;
-  return { rewards, subjects };
+  const goal = { ...DEFAULT_SETTINGS.goal, ...(saved?.goal ?? {}) };
+  return { rewards, subjects, goal };
 }

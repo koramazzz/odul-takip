@@ -9,7 +9,7 @@ function amountField(name, label, value) {
 }
 
 export function renderSettings() {
-  const { rewards, subjects } = state.settings;
+  const { rewards, subjects, goal } = state.settings;
   return `<form class="card" data-form="settings" novalidate>
     <h2>Ödül tutarları (${CURRENCY})</h2>
     <div class="form-grid">
@@ -17,6 +17,12 @@ export function renderSettings() {
       ${amountField("reading", `Kitap, günlük (${rewards.reading.payer})`, rewards.reading.amount)}
       ${amountField("fullWeek", `Kitap, ${DAYS_IN_WEEK} gün tam hafta`, rewards.reading.fullWeek)}
       ${amountField("prayer", `Namaz, vakit başı (${rewards.prayer.payer})`, rewards.prayer.amount)}
+    </div>
+    <h2>Hedef</h2>
+    <div class="form-grid">
+      <div class="field"><label for="goalName">Hedefin adı</label>
+        <input id="goalName" name="goalName" type="text" placeholder="Bisiklet" value="${esc(goal.name)}"></div>
+      ${amountField("goalAmount", `Hedef tutarı (${CURRENCY}), yoksa 0`, goal.amount)}
     </div>
     <h2>Dersler</h2>
     <div class="field"><label for="subjects">Her satıra bir ders yaz</label>
