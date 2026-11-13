@@ -22,10 +22,7 @@ export function dateNav({ action, picker, value, label, canGoNext }) {
     <button type="button" class="btn" data-action="${action}" data-step="-1" aria-label="Önceki">‹</button>
     <div class="date-nav-center">
       <h2>${esc(label)}</h2>
-      <div class="date-pick">
-        <label for="${pickerId}">Tarih seç</label>
-        <input id="${pickerId}" type="date" data-pick="${picker}" value="${esc(value)}" max="${todayISO()}">
-      </div>
+      <input id="${pickerId}" class="date-pick" type="date" aria-label="Tarih seç" data-pick="${picker}" value="${esc(value)}" max="${todayISO()}">
     </div>
     <button type="button" class="btn" data-action="${action}" data-step="1" aria-label="Sonraki" ${canGoNext ? "" : "disabled"}>›</button>
   </div>`;

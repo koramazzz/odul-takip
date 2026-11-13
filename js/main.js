@@ -19,18 +19,21 @@ import { renderProgress } from "./views/progress.js";
 import { renderSettings, rewardFields } from "./views/settings.js";
 import { renderToday } from "./views/today.js";
 
+/* `tab`: üst sekmelerde görünür. Aynı `section` içindeki ekranlar o sekmenin altında alt sekme olur. */
 const ROUTES = [
-  { id: "bugun", label: "Bugün", icon: "⭐", render: renderToday },
-  { id: "kazanc", label: "Kazanç", icon: "💰", render: renderEarnings },
-  { id: "rozetler", label: "Rozetler", icon: "🏅", render: renderBadges },
-  { id: "sinavlar", label: "Sınavlar", icon: "📝", render: renderExams },
-  { id: "gelisim", label: "Gelişim", icon: "📈", render: renderProgress },
-  { id: "ayarlar", label: "Ayarlar", icon: "⚙️", render: renderSettings },
+  { id: "bugun", label: "Bugün", icon: "⭐", tab: true, render: renderToday },
+  { id: "kazanc", label: "Kazanç", icon: "💰", tab: true, render: renderEarnings },
+  { id: "rozetler", label: "Rozetler", icon: "🏅", tab: true, render: renderBadges },
+  { id: "sinavlar", label: "Sınavlar", icon: "📝", tab: true, section: "sinavlar", sectionLabel: "Sınav ekle", render: renderExams },
+  { id: "gelisim", section: "sinavlar", sectionLabel: "Gelişim", render: renderProgress },
+  { id: "ayarlar", render: renderSettings }, // üst çubuktaki dişli düğmesinden açılır
 ];
 const DEFAULT_ROUTE = ROUTES[0];
 
 const app = document.getElementById("app");
 const tabs = document.getElementById("tabs");
+const subtabs = document.getElementById("subtabs");
+const settingsLink = document.getElementById("settings-link");
 const banner = document.getElementById("banner");
 const soundToggle = document.getElementById("sound-toggle");
 const SOUND_TOGGLE = {
@@ -44,10 +47,20 @@ function renderBanner() {
   banner.innerHTML = message ? `<div class="banner">${esc(message)}</div>` : "";
 }
 
+const tabLink = (route, label, isCurrent) =>
+  `<a class="tab" href="#${route.id}" ${isCurrent ? 'aria-current="page"' : ""}>${label}</a>`;
+
 function renderTabs() {
+  const current = state.route;
+  const inSameSection = (route) => Boolean(route.section) && route.section === current.section;
   tabs.hidden = !state.session;
-  tabs.innerHTML = ROUTES.map((r) =>
-    `<a class="tab" href="#${r.id}" ${r.id === state.route.id ? 'aria-current="page"' : ""}><span aria-hidden="true">${r.icon}</span> ${esc(r.label)}</a>`).join("");
+  tabs.innerHTML = ROUTES.filter((r) => r.tab).map((r) =>
+    tabLink(r, `<span aria-hidden="true">${r.icon}</span> ${esc(r.label)}`, r.id === current.id || inSameSection(r))).join("");
+
+  const sectionRoutes = ROUTES.filter(inSameSection);
+  subtabs.hidden = !state.session || !sectionRoutes.length;
+  subtabs.innerHTML = sectionRoutes.map((r) => tabLink(r, esc(r.sectionLabel), r.id === current.id)).join("");
+  settingsLink.hidden = !state.session;
 }
 
 function renderSoundToggle() {

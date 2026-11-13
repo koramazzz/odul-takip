@@ -63,15 +63,21 @@ p { margin: 0; }
 .num { font-variant-numeric: tabular-nums; }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.topbar-actions { display: flex; gap: 8px; }
 .icon-btn {
   width: var(--tap); height: var(--tap); flex: none; border-radius: 50%; font-size: 1.4rem; line-height: 1;
   border: 2px solid var(--line); border-bottom-width: var(--edge); background: var(--surface);
+  display: grid; place-items: center; text-decoration: none;
 }
 
-.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.subtabs { display: flex; gap: 8px; }
+.subtabs .tab { flex: 1; padding: 6px 8px; border-bottom-width: 2px; font-size: .95rem; }
+.subtabs .tab[aria-current="page"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+.tabs { display: flex; gap: 8px; }
 .tab {
-  flex: 1 0 auto; text-align: center; text-decoration: none; color: var(--ink);
-  padding: 10px 8px; border-radius: 999px; border: 2px solid var(--line); border-bottom-width: var(--edge);
+  flex: 1 1 0; min-width: 0; text-align: center; text-decoration: none; color: var(--ink);
+  padding: 10px 4px; border-radius: 999px; border: 2px solid var(--line); border-bottom-width: var(--edge);
   background: var(--surface); font-weight: 700; white-space: nowrap;
 }
 .tab[aria-current="page"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary-edge); }
@@ -87,7 +93,13 @@ p { margin: 0; }
 
 /* Karşılama kartı: maskot, cesaret sözü, günün ilerleme çubuğu */
 .hero { grid-template-columns: auto 1fr; align-items: center; column-gap: 16px; background: var(--coin-soft); border-color: var(--coin); }
-.hero-body { display: grid; gap: 8px; min-width: 0; }
+.hero-body { display: grid; gap: 6px; min-width: 0; }
+.earned { color: var(--muted); font-weight: 700; }
+.earned strong { color: var(--ink); font-family: var(--font-display); font-size: 1.15rem; }
+
+/* Görev kartı: düğme, haftanın yıldızları ve en fazla bir kısa not. */
+.task-card { gap: 10px; padding: 12px; }
+.note { color: var(--muted); font-weight: 700; font-size: .95rem; text-align: center; }
 .mascot { width: 92px; height: 92px; display: block; }
 .mascot .face { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; fill: none; }
 .mascot .eye { fill: var(--ink); }
@@ -153,13 +165,18 @@ button { cursor: pointer; }
 
 /* Haftanın kitap yıldızları */
 .stars { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
-.star { display: grid; gap: 2px; justify-items: center; font-size: .85rem; font-weight: 700; color: var(--muted); }
-.star svg { width: 34px; height: 34px; fill: var(--surface); stroke: var(--line); stroke-width: 2; stroke-linejoin: round; }
+.star { display: grid; gap: 0; justify-items: center; font-size: .75rem; font-weight: 700; color: var(--muted); }
+.star svg { width: 26px; height: 26px; fill: var(--surface); stroke: var(--line); stroke-width: 2; stroke-linejoin: round; }
 .star.on { color: var(--ink); }
 .star.on svg { fill: var(--coin); stroke: var(--coin-edge); }
 .stars.homework .star.on svg { fill: var(--homework); stroke: var(--homework); }
 .stars.test .star.on svg { fill: var(--test); stroke: var(--test); }
 
+/* Dar ekranda sekmenin simgesi yazının üstüne geçer, yazı sığar. */
+@media (max-width: 480px) {
+  .tabs .tab { padding: 6px 2px; font-size: .8rem; border-radius: var(--radius-small); }
+  .tabs .tab span { display: block; font-size: 1.25rem; line-height: 1.2; }
+}
 @media (max-width: 400px) {
   .tile { padding: 10px; }
   .tile .value { font-size: 1.25rem; }
@@ -175,9 +192,7 @@ button { cursor: pointer; }
 
 .date-nav { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
 .date-nav-center { display: grid; gap: 6px; justify-items: center; text-align: center; min-width: 0; }
-.date-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; align-items: center; max-width: 100%; font-weight: 700; font-size: .95rem; color: var(--muted); }
-.date-pick label { white-space: nowrap; }
-.date-pick input[type="date"] { width: auto; min-height: 40px; color: var(--ink); background: var(--surface); }
+input[type="date"].date-pick { width: auto; min-height: 36px; padding: 4px 10px; font-weight: 700; font-size: .95rem; color: var(--muted); background: var(--surface); }
 
 .scroll-x { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }

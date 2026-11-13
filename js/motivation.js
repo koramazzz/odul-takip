@@ -1,6 +1,6 @@
 /* Günün ilerlemesi, cesaret sözleri, seri ve kutlanacak anlar. Saf hesap; ekrana dokunmaz. */
 import { ENCOURAGEMENTS, MILESTONES, PRAYERS } from "./config.js";
-import { addDays, weekStart } from "./dates.js";
+import { weekStart } from "./dates.js";
 import { dayEarnings, dayOf, examRewards, prayerBonusReached, sumValues, weekSummary } from "./earnings.js";
 import { DAILY_TASKS, taskById } from "./tasks.js";
 
@@ -13,17 +13,6 @@ export function dayProgress(day) {
 }
 
 export const encouragement = (ratio) => ENCOURAGEMENTS.find((e) => ratio >= e.from).text;
-
-/* Seçili günde biten, arka arkaya görevin yapıldığı gün sayısı. Seçili gün henüz yapılmadıysa dünden sayar. */
-export function taskStreak(days, iso, taskId) {
-  let cursor = dayOf(days, iso)[taskId] ? iso : addDays(iso, -1);
-  let streak = 0;
-  while (dayOf(days, cursor)[taskId]) {
-    streak += 1;
-    cursor = addDays(cursor, -1);
-  }
-  return streak;
-}
 
 /* Bir işaretlemeden önce ve sonra karşılaştırılacak durum. */
 export function progressSnapshot(data, iso, rewards) {

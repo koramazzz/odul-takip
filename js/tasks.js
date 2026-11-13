@@ -9,7 +9,6 @@ export const DAILY_TASKS = [
     short: "Ödev",
     title: () => "Ödevlerimi yaptım",
     weekLabel: "Bu hafta ödev yapılan günler",
-    weekLine: (count) => `Bu hafta ${count}/${DAYS_IN_WEEK} gün ödev yapıldı`,
   },
   {
     id: "reading",
@@ -17,11 +16,7 @@ export const DAILY_TASKS = [
     short: "Kitap",
     title: () => "Kitap okudum",
     weekLabel: "Bu hafta okunan günler",
-    weekLine: (count) => `Bu hafta ${count}/${DAYS_IN_WEEK} gün kitap okundu`,
-    bonusHint: (remaining, amount) => `${remaining} gün daha okursan bu haftanın kitap ödülü ${amount} olur.`,
-    bonusDone: (amount) => `Haftanın her günü okudun. Ödül ${amount} oldu!`,
     fullWeekTitle: `${DAYS_IN_WEEK} gün kitap okudun!`,
-    showStreak: true,
   },
   {
     id: "test",
@@ -29,9 +24,6 @@ export const DAILY_TASKS = [
     short: "Test",
     title: (reward) => `Her dersten ${reward.questions} soru çözdüm`,
     weekLabel: "Bu hafta test çözülen günler",
-    weekLine: (count) => `Bu hafta ${count}/${DAYS_IN_WEEK} gün test çözüldü`,
-    bonusHint: (remaining, amount) => `${remaining} gün daha çözersen bu haftanın test ödülü ${amount} olur.`,
-    bonusDone: (amount) => `Haftanın her günü test çözdün. Ödül ${amount} oldu!`,
     fullWeekTitle: `${DAYS_IN_WEEK} gün test çözdün!`,
   },
 ];

@@ -73,7 +73,6 @@ export const MILESTONE_SUMMARIES = {
   week: (totals) => `Bu hafta toplam ${totals.week} kazandın.`,
 };
 export const CELEBRATION_SOUND = "fanfare";
-export const MIN_STREAK_TO_SHOW = 2;
 
 /* Rozetler: `stat` badges.js içindeki computeStats alanıdır; değer `target`a ulaşınca rozet kazanılır. */
 export const BADGES = [

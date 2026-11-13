@@ -1,14 +1,15 @@
-import { DAYS_IN_WEEK, MIN_STREAK_TO_SHOW, PERCENT, PRAYERS } from "../config.js";
+import { DAYS_IN_WEEK, PERCENT, PRAYERS } from "../config.js";
 import { todayISO, weekStart } from "../dates.js";
 import { dayEarnings, dayOf, prayerBonusReached, sumValues, weekSummary } from "../earnings.js";
 import { esc, formatLongDate, formatWeekday, money } from "../format.js";
-import { dayProgress, encouragement, taskStreak } from "../motivation.js";
+import { dayProgress, encouragement } from "../motivation.js";
 import { state } from "../state.js";
 import { DAILY_TASKS } from "../tasks.js";
 import { mascot, starIcon } from "./mascot.js";
 import { checkButton, countedMoney, dateNav } from "./shared.js";
 
-function hero(progress) {
+/* Üst kart: maskot, cesaret sözü, günün ilerlemesi ve kazanç özeti. */
+function hero(progress, dayTotal, weekTotal) {
   return `<section class="card hero">
     ${mascot({ party: progress.done === progress.total })}
     <div class="hero-body">
@@ -16,7 +17,8 @@ function hero(progress) {
       <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${progress.total}" aria-valuenow="${progress.done}" aria-label="Günün görevleri">
         <div class="progress-fill" style="width:${progress.ratio * PERCENT}%"></div>
       </div>
-      <p class="strong num">${progress.done}/${progress.total} görev tamam</p>
+      <p class="strong num">${progress.done}/${progress.total} görev</p>
+      <p class="earned num">Bugün <strong>${countedMoney("day", dayTotal)}</strong> · Bu hafta <strong>${countedMoney("week", weekTotal)}</strong></p>
     </div>
   </section>`;
 }
@@ -29,31 +31,35 @@ function weekStars(task, week, selectedISO) {
   </div>`;
 }
 
-/* Haftalık satır: tam hafta ödülü olan görevde hedefe kalan günü, olmayanda yapılan günü ve kazancı söyler. */
-function weekLine(task, week, reward) {
-  const count = week.daysDone[task.id];
-  if (reward.fullWeek === undefined) return `${task.weekLine(count)} · ${money(week.totals[task.id])}`;
-  return count === DAYS_IN_WEEK
-    ? task.bonusDone(money(reward.fullWeek))
-    : task.bonusHint(DAYS_IN_WEEK - count, money(reward.fullWeek));
-}
-
-function prayerBonusLine(day, rewards) {
-  const { bonusMinCount, bonusAmount } = rewards.prayer;
-  if (prayerBonusReached(day, rewards)) return `Bonus kazanıldı: +${money(bonusAmount)}`;
-  return `${bonusMinCount} vakit kılınca +${money(bonusAmount)} bonus · ${bonusMinCount - day.prayers.length} vakit kaldı`;
+/* Yalnızca tam hafta ödülü olan görevlerde gösterilen kısa hedef satırı. */
+function fullWeekNote(task, week, reward) {
+  if (reward.fullWeek === undefined) return "";
+  const text = week.fullWeekTasks.includes(task.id)
+    ? `Tam hafta! ${money(reward.fullWeek)} kazandın.`
+    : `${DAYS_IN_WEEK} gün yap, ${money(reward.fullWeek)} kazan!`;
+  return `<p class="note num">${esc(text)}</p>`;
 }
 
 function taskCard(task, { day, week, rewards, iso }) {
   const reward = rewards[task.id];
-  const streak = task.showStreak ? taskStreak(state.days, iso, task.id) : 0;
-  return `<section class="card">
+  return `<section class="card task-card">
     ${checkButton({ task: task.id, icon: task.icon, pressed: day[task.id], title: task.title(reward), reward: reward.amount })}
     ${weekStars(task, week, iso)}
-    <div class="row spread">
-      <p class="muted strong num">${esc(weekLine(task, week, reward))}</p>
-      ${streak >= MIN_STREAK_TO_SHOW ? `<span class="pill coin num">${streak} gün üst üste</span>` : ""}
+    ${fullWeekNote(task, week, reward)}
+  </section>`;
+}
+
+function prayerCard(day, rewards) {
+  const { amount, bonusMinCount, bonusAmount } = rewards.prayer;
+  const note = prayerBonusReached(day, rewards)
+    ? `Bonus kazandın: +${money(bonusAmount)}`
+    : `Her vakit +${money(amount)} · ${bonusMinCount} vakitte +${money(bonusAmount)} bonus`;
+  return `<section class="card task-card">
+    <div class="row spread"><h3>Namaz</h3><span class="pill num">${day.prayers.length}/${PRAYERS.length}</span></div>
+    <div class="chips prayers">
+      ${PRAYERS.map((p) => `<button type="button" class="chip" data-action="toggle-prayer" data-prayer="${p.id}" aria-pressed="${day.prayers.includes(p.id)}">${esc(p.label)}</button>`).join("")}
     </div>
+    <p class="note num">${esc(note)}</p>
   </section>`;
 }
 
@@ -66,17 +72,7 @@ export function renderToday() {
 
   return `
     ${dateNav({ action: "shift-day", picker: "day", value: iso, label: `${isToday ? "Bugün · " : ""}${formatLongDate(iso)}`, canGoNext: !isToday })}
-    ${hero(dayProgress(day))}
-    <div class="tiles">
-      <div class="tile coin"><div class="label">Bu günün kazancı</div><div class="value num">${countedMoney("day", sumValues(dayEarnings(day, rewards)))}</div></div>
-      <div class="tile"><div class="label">Bu haftanın kazancı</div><div class="value num">${countedMoney("week", week.total)}</div></div>
-    </div>
+    ${hero(dayProgress(day), sumValues(dayEarnings(day, rewards)), week.total)}
     ${DAILY_TASKS.map((task) => taskCard(task, { day, week, rewards, iso })).join("")}
-    <section class="card">
-      <div class="row spread"><h3>Namaz</h3><span class="pill num">${day.prayers.length}/${PRAYERS.length} vakit · her vakit +${money(rewards.prayer.amount)}</span></div>
-      <div class="chips prayers">
-        ${PRAYERS.map((p) => `<button type="button" class="chip" data-action="toggle-prayer" data-prayer="${p.id}" aria-pressed="${day.prayers.includes(p.id)}">${esc(p.label)}</button>`).join("")}
-      </div>
-      <p class="muted strong num">${esc(prayerBonusLine(day, rewards))}</p>
-    </section>`;
+    ${prayerCard(day, rewards)}`;
 }
