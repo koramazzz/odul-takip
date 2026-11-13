@@ -13,6 +13,11 @@ export function examTotals(exam) {
   return { ...totals, rate: successRate(totals) };
 }
 
+/* Sınavın kazandırdığı ödül: türü kurala uyan ve başarısı eşiği geçen sınav için tutar, yoksa 0. */
+export function examReward(exam, rule) {
+  return exam.kind === rule.kind && examTotals(exam).rate > rule.minRate ? rule.amount : 0;
+}
+
 /* Ders bazında: tarihe göre başarı serisi ve hata yapılan konuların kaç sınavda geçtiği. */
 export function subjectStats(exams) {
   const stats = new Map();

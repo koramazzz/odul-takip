@@ -9,8 +9,6 @@ function amountField(name, label, value) {
     <input id="${name}" name="${name}" type="number" min="0" step="1" inputmode="numeric" value="${esc(value)}"></div>`;
 }
 
-const prayerReward = { key: "prayer", short: "Namaz" };
-
 /* Ayarlar formundaki ödül alanları; hem çizimde hem kaydederken kullanılır. */
 export function rewardFields(rewards) {
   const fields = [];
@@ -23,8 +21,12 @@ export function rewardFields(rewards) {
       fields.push({ key, field: "questions", name: `${key}.questions`, label: `${short}, ders başına soru sayısı` });
     }
   }
-  const { key, short } = prayerReward;
-  fields.push({ key, field: "amount", name: `${key}.amount`, label: `${short}, vakit başı (${rewards[key].payer})` });
+  const { prayer, exam } = rewards;
+  fields.push(
+    { key: "prayer", field: "amount", name: "prayer.amount", label: `Namaz, vakit başı (${prayer.payer})` },
+    { key: "prayer", field: "bonusAmount", name: "prayer.bonusAmount", label: `Namaz, günde ${prayer.bonusMinCount} vakit bonusu` },
+    { key: "exam", field: "amount", name: "exam.amount", label: `Sınav, %${exam.minRate} üstü ödülü (${exam.payer})` },
+  );
   return fields;
 }
 

@@ -16,7 +16,7 @@ function fullWeekPill(taskId, rewards) {
 export function renderEarnings() {
   const { rewards } = state.settings;
   const start = weekStart(state.weekAnchor);
-  const week = weekSummary(start, state.days, rewards);
+  const week = weekSummary(start, state, rewards);
   const label = `${formatShortDate(start)} – ${formatShortDate(addDays(start, DAYS_IN_WEEK - 1))}`;
 
   return `
@@ -44,10 +44,11 @@ export function renderEarnings() {
           <tfoot>
             <tr><td>Toplam</td>
             ${[...DAILY_TASKS.map((task) => task.id), "prayer"].map((key) => `<td class="num">${formatNumber(week.totals[key])}</td>`).join("")}
-            <td class="r num">${formatNumber(week.total)}</td></tr>
+            <td class="r num">${formatNumber(week.dailyTotal)}</td></tr>
           </tfoot>
         </table>
       </div>
+      ${week.totals.exam ? `<p class="strong num">Sınav ödülü: +${money(week.totals.exam)}</p>` : ""}
     </section>
-    <div class="tiles"><div class="tile"><div class="label">Bugüne kadar toplam kazanç</div><div class="value num">${money(allTimeTotal(state.days, rewards))}</div></div></div>`;
+    <div class="tiles"><div class="tile"><div class="label">Bugüne kadar toplam kazanç</div><div class="value num">${money(allTimeTotal(state, rewards))}</div></div></div>`;
 }

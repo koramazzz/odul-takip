@@ -1,7 +1,7 @@
 import { EXAM_KINDS } from "../config.js";
 import { todayISO } from "../dates.js";
-import { byDateAsc, draftSubjects, examKind, examTotals, kindLabel, successRate } from "../exams.js";
-import { esc, formatLongDate, percent } from "../format.js";
+import { byDateAsc, draftSubjects, examKind, examReward, examTotals, kindLabel, successRate } from "../exams.js";
+import { esc, formatLongDate, money, percent } from "../format.js";
 import { state } from "../state.js";
 import { formError } from "./shared.js";
 
@@ -28,6 +28,7 @@ function subjectRow(subject, index, row) {
 
 function renderExamForm() {
   const draft = state.examDraft;
+  const rewardRule = state.settings.rewards.exam;
   return `<form class="card" data-form="exam" novalidate>
     <h2>${draft.id ? "Sınavı düzenle" : "Yeni sınav ekle"}</h2>
     <div class="form-grid">
@@ -37,6 +38,7 @@ function renderExamForm() {
       <div class="field"><label for="exam-name">Sınavın adı</label><input id="exam-name" type="text" data-draft="name" placeholder="Yayın ya da kitap adı" value="${esc(draft.name)}"></div>
     </div>
     <p class="muted">${esc(examKind(draft.kind).hint)}</p>
+    ${draft.kind === rewardRule.kind ? `<p class="strong num">Başarı ${percent(rewardRule.minRate)}'yi geçerse ${money(rewardRule.amount)} ödül!</p>` : ""}
     <div>${draftSubjects(draft, state.settings.subjects).map((subject, i) => subjectRow(subject, i, draft.rows[subject] ?? {})).join("")}</div>
     ${formError(state.formError)}
     <div class="row">
@@ -58,10 +60,12 @@ function examActions(exam) {
 }
 
 function renderExamCard(exam) {
+  const reward = examReward(exam, state.settings.rewards.exam);
   return `<article class="card">
     <div class="row spread">
       <div><h3>${esc(exam.name)}</h3><span class="muted">${esc(formatLongDate(exam.date))}</span></div>
-      <div class="row"><span class="pill">${esc(kindLabel(exam.kind))}</span><span class="pill coin num">${percent(examTotals(exam).rate)}</span></div>
+      <div class="row"><span class="pill">${esc(kindLabel(exam.kind))}</span><span class="pill coin num">${percent(examTotals(exam).rate)}</span>
+        ${reward ? `<span class="pill good num">Ödül +${money(reward)}</span>` : ""}</div>
     </div>
     <div class="exam-lines">
       ${exam.results.map((r) => `<div class="exam-line">

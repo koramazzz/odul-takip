@@ -18,7 +18,7 @@ function longestRun(isoDates) {
   return best;
 }
 
-export function computeStats(days, exams, rewards) {
+export function computeStats({ days, exams }, rewards) {
   const entries = Object.keys(days).map((iso) => ({ iso, day: dayOf(days, iso) }));
   const progress = entries.map(({ day }) => dayProgress(day));
   return {
@@ -27,7 +27,7 @@ export function computeStats(days, exams, rewards) {
     homeworkDays: entries.filter(({ day }) => day.homework).length,
     fullPrayerDays: entries.filter(({ day }) => day.prayers.length === PRAYERS.length).length,
     perfectDays: progress.filter((p) => p.done === p.total).length,
-    totalEarned: allTimeTotal(days, rewards),
+    totalEarned: allTimeTotal({ days, exams }, rewards),
     examCount: exams.length,
     bestExamRate: Math.round(Math.max(0, ...exams.map((exam) => examTotals(exam).rate))),
   };

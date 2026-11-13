@@ -34,8 +34,9 @@ export const DEFAULT_SETTINGS = {
   rewards: {
     homework: { amount: 50, payer: "Baba" },
     reading: { amount: 50, fullWeek: 500, payer: "Abi" },
-    test: { amount: 20, fullWeek: 210, questions: 10, payer: "Abi" }, // her dersten `questions` soru
-    prayer: { amount: 10, payer: "Abi" },
+    test: { amount: 30, fullWeek: 280, questions: 10, payer: "Abi" }, // her dersten `questions` soru; tam hafta 7×30 + 70 bonus
+    prayer: { amount: 10, bonusMinCount: 4, bonusAmount: 20, payer: "Abi" }, // günde en az `bonusMinCount` vakit kılınca bonus
+    exam: { amount: 100, minRate: 92, kind: "deneme", payer: "Abi" }, // başarısı `minRate` yüzdesini geçen sınava ödül
   },
   subjects: ["Türkçe", "Matematik", "Fen Bilimleri", "Sosyal Bilgiler", "İngilizce", "Din Kültürü"],
   goal: { name: "", amount: 0 }, // tutar 0 ise hedef belirlenmemiştir
@@ -61,15 +62,17 @@ export const ENCOURAGEMENTS = [
 ];
 
 export const MILESTONES = {
-  dayComplete: { title: "Günün tüm görevleri tamam!", scope: "day", sound: "fanfare" },
-  fullWeek: { scope: "week", sound: "fanfare" }, // başlığı görevden gelir (tasks.js)
-  allPrayers: { title: "5 vakit tamam!", scope: "day", sound: "fanfare" },
+  dayComplete: { title: "Günün her şeyini yaptın!", scope: "day" },
+  fullWeek: { scope: "week" }, // başlığı görevden gelir (tasks.js)
+  allPrayers: { title: "5 vakit tamam!", scope: "day" },
+  prayerBonus: { title: "Namaz bonusunu kazandın!", scope: "day" },
 };
 /* Kutlama bildiriminin ikinci satırı: anın kapsadığı süreye göre. */
 export const MILESTONE_SUMMARIES = {
-  day: (totals) => `Günün her şeyini yaptın! Günün kazancı ${totals.day}.`,
+  day: (totals) => `Günün kazancı ${totals.day}.`,
   week: (totals) => `Bu hafta toplam ${totals.week} kazandın.`,
 };
+export const CELEBRATION_SOUND = "fanfare";
 export const MIN_STREAK_TO_SHOW = 2;
 
 /* Rozetler: `stat` badges.js içindeki computeStats alanıdır; değer `target`a ulaşınca rozet kazanılır. */
@@ -89,7 +92,6 @@ export const BADGES = [
   { id: "exam-1", icon: "📝", title: "İlk sınav", description: "İlk sınavını kaydet", stat: "examCount", target: 1, unit: "count" },
   { id: "exam-90", icon: "🎯", title: "Tam isabet", description: "Bir sınavda %90 başarıya ulaş", stat: "bestExamRate", target: 90, unit: "percent" },
 ];
-export const NEW_BADGE_SOUND = "fanfare";
 
 export const STORAGE_KEYS = { muted: "yunulostakip.muted" };
 export const TOAST_MS = 3200;

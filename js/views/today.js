@@ -1,6 +1,6 @@
 import { DAYS_IN_WEEK, MIN_STREAK_TO_SHOW, PERCENT, PRAYERS } from "../config.js";
 import { todayISO, weekStart } from "../dates.js";
-import { dayEarnings, dayOf, sumValues, weekSummary } from "../earnings.js";
+import { dayEarnings, dayOf, prayerBonusReached, sumValues, weekSummary } from "../earnings.js";
 import { esc, formatLongDate, formatWeekday, money } from "../format.js";
 import { dayProgress, encouragement, taskStreak } from "../motivation.js";
 import { state } from "../state.js";
@@ -38,6 +38,12 @@ function weekLine(task, week, reward) {
     : task.bonusHint(DAYS_IN_WEEK - count, money(reward.fullWeek));
 }
 
+function prayerBonusLine(day, rewards) {
+  const { bonusMinCount, bonusAmount } = rewards.prayer;
+  if (prayerBonusReached(day, rewards)) return `Bonus kazanıldı: +${money(bonusAmount)}`;
+  return `${bonusMinCount} vakit kılınca +${money(bonusAmount)} bonus · ${bonusMinCount - day.prayers.length} vakit kaldı`;
+}
+
 function taskCard(task, { day, week, rewards, iso }) {
   const reward = rewards[task.id];
   const streak = task.showStreak ? taskStreak(state.days, iso, task.id) : 0;
@@ -55,7 +61,7 @@ export function renderToday() {
   const { rewards } = state.settings;
   const iso = state.selectedDate;
   const day = dayOf(state.days, iso);
-  const week = weekSummary(weekStart(iso), state.days, rewards);
+  const week = weekSummary(weekStart(iso), state, rewards);
   const isToday = iso === todayISO();
 
   return `
@@ -71,5 +77,6 @@ export function renderToday() {
       <div class="chips prayers">
         ${PRAYERS.map((p) => `<button type="button" class="chip" data-action="toggle-prayer" data-prayer="${p.id}" aria-pressed="${day.prayers.includes(p.id)}">${esc(p.label)}</button>`).join("")}
       </div>
+      <p class="muted strong num">${esc(prayerBonusLine(day, rewards))}</p>
     </section>`;
 }

@@ -1,6 +1,6 @@
 /* Bir görev işaretlenince ne kutlanacağına karar verir: ses, konfeti, uçan ödül, bildirim. */
 import { badgeById } from "../badges.js";
-import { CONFETTI, FLOAT_REWARD_MS, MILESTONE_SUMMARIES, NEW_BADGE_SOUND, TOAST_MS } from "../config.js";
+import { CELEBRATION_SOUND, CONFETTI, FLOAT_REWARD_MS, MILESTONE_SUMMARIES, TOAST_MS } from "../config.js";
 import { esc, money } from "../format.js";
 import { describeMilestone, newMilestones } from "../motivation.js";
 import { burst } from "./confetti.js";
@@ -32,14 +32,30 @@ function showToast(title, detail) {
 
 const screenCenter = () => ({ x: window.innerWidth / 2, y: window.innerHeight / 3 });
 
-function bigCelebration(title, detail, sound) {
-  playSound(sound);
+function bigCelebration(title, detail) {
+  playSound(CELEBRATION_SOUND);
   burst(screenCenter(), CONFETTI.bigBurst);
   showToast(title, detail);
 }
 
-/* `before` ve `after`: işlemden önceki ve sonraki durum (ilerleme + kazanılmış rozetler).
-   `origin`: dokunulan düğmenin ekran konumu. Yeni rozet, günün kutlamasından önce gelir. */
+/* Bu işlemle kazanılan büyük an: önce sınav ödülü, sonra yeni rozet, sonra günün/haftanın anı. */
+function bigMoment(before, after, progressed) {
+  if (after.examRewardCount > before.examRewardCount) {
+    return { title: "Sınav ödülü kazandın!", detail: `+${money(after.examRewardTotal - before.examRewardTotal)}` };
+  }
+  const newBadgeId = after.badges.find((id) => !before.badges.includes(id));
+  if (newBadgeId) {
+    const badge = badgeById(newBadgeId);
+    return { title: "Yeni rozet kazandın!", detail: `${badge.icon} ${badge.title}` };
+  }
+  const [milestone] = progressed ? newMilestones(before, after) : [];
+  if (!milestone) return null;
+  const { title, scope } = describeMilestone(milestone);
+  return { title, detail: MILESTONE_SUMMARIES[scope]({ day: money(after.dayTotal), week: money(after.weekTotal) }) };
+}
+
+/* `before` ve `after`: işlemden önceki ve sonraki durum (ilerleme, rozetler, sınav ödülleri).
+   `origin`: dokunulan düğmenin ekran konumu. */
 export function celebrate(before, after, origin) {
   const sameDay = before.iso === after.iso;
   if (sameDay && after.done < before.done) { playSound("undo"); return; }
@@ -48,19 +64,10 @@ export function celebrate(before, after, origin) {
   const gained = after.weekTotal - before.weekTotal;
   if (progressed && gained > 0) floatReward(origin, gained);
 
-  const newBadgeId = after.badges.find((id) => !before.badges.includes(id));
-  if (newBadgeId) {
-    const badge = badgeById(newBadgeId);
-    bigCelebration("Yeni rozet kazandın!", `${badge.icon} ${badge.title}`, NEW_BADGE_SOUND);
-    return;
-  }
-  const [milestone] = progressed ? newMilestones(before, after) : [];
-  if (milestone) {
-    const { title, scope, sound } = describeMilestone(milestone);
-    bigCelebration(title, MILESTONE_SUMMARIES[scope]({ day: money(after.dayTotal), week: money(after.weekTotal) }), sound);
-    return;
-  }
-  if (progressed) {
+  const moment = bigMoment(before, after, progressed);
+  if (moment) {
+    bigCelebration(moment.title, moment.detail);
+  } else if (progressed) {
     playSound("done");
     burst(origin, CONFETTI.smallBurst);
   }

@@ -40,7 +40,7 @@ function badgeCard(badge) {
 }
 
 export function renderBadges() {
-  const stats = computeStats(state.days, state.exams, state.settings.rewards);
+  const stats = computeStats(state, state.settings.rewards);
   const badges = badgeStates(stats);
   const unlockedCount = badges.filter((b) => b.unlocked).length;
   return `${goalCard(state.settings.goal, stats.totalEarned)}

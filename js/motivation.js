@@ -1,7 +1,7 @@
 /* Günün ilerlemesi, cesaret sözleri, seri ve kutlanacak anlar. Saf hesap; ekrana dokunmaz. */
 import { ENCOURAGEMENTS, MILESTONES, PRAYERS } from "./config.js";
 import { addDays, weekStart } from "./dates.js";
-import { dayEarnings, dayOf, sumValues, weekSummary } from "./earnings.js";
+import { dayEarnings, dayOf, examRewards, prayerBonusReached, sumValues, weekSummary } from "./earnings.js";
 import { DAILY_TASKS, taskById } from "./tasks.js";
 
 const DAILY_GOAL_COUNT = DAILY_TASKS.length + PRAYERS.length;
@@ -26,9 +26,11 @@ export function taskStreak(days, iso, taskId) {
 }
 
 /* Bir işaretlemeden önce ve sonra karşılaştırılacak durum. */
-export function progressSnapshot(days, iso, rewards) {
+export function progressSnapshot(data, iso, rewards) {
+  const { days } = data;
   const day = dayOf(days, iso);
-  const week = weekSummary(weekStart(iso), days, rewards);
+  const week = weekSummary(weekStart(iso), data, rewards);
+  const rewardedExams = examRewards(data.exams, rewards);
   const progress = dayProgress(day);
   const fullWeeks = Object.fromEntries(
     DAILY_TASKS.map((task) => [`${FULL_WEEK}:${task.id}`, week.fullWeekTasks.includes(task.id)]),
@@ -38,21 +40,23 @@ export function progressSnapshot(days, iso, rewards) {
     done: progress.done,
     dayTotal: sumValues(dayEarnings(day, rewards)),
     weekTotal: week.total,
+    examRewardCount: rewardedExams.length,
+    examRewardTotal: rewardedExams.reduce((sum, r) => sum + r.amount, 0),
     reached: {
       dayComplete: progress.done === progress.total,
       ...fullWeeks,
       allPrayers: day.prayers.length === PRAYERS.length,
+      prayerBonus: prayerBonusReached(day, rewards),
     },
   };
 }
 
-/* Bu işaretlemeyle yeni ulaşılan anlar; en büyüğü önce. Gün tamamlandıysa "5 vakit" ayrıca sayılmaz. */
+/* Bu işaretlemeyle yeni ulaşılan anlar; `reached` sırasıyla, en büyüğü önce. */
 export function newMilestones(before, after) {
-  const fresh = Object.keys(after.reached).filter((key) => after.reached[key] && !before.reached[key]);
-  return fresh.includes("dayComplete") ? fresh.filter((key) => key !== "allPrayers") : fresh;
+  return Object.keys(after.reached).filter((key) => after.reached[key] && !before.reached[key]);
 }
 
-/* Anın başlığı, kapsamı ve sesi. Tam hafta anlarının başlığı görevden gelir ("fullWeek:reading"). */
+/* Anın başlığı ve kapsamı. Tam hafta anlarının başlığı görevden gelir ("fullWeek:reading"). */
 export function describeMilestone(key) {
   const [name, taskId] = key.split(":");
   return taskId ? { ...MILESTONES[name], title: taskById(taskId).fullWeekTitle } : MILESTONES[name];

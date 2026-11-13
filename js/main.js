@@ -159,8 +159,8 @@ const formHandlers = { exam: submitExam, settings: submitSettings, login: submit
 
 /* ---------- Olaylar ---------- */
 const snapshot = () => ({
-  ...progressSnapshot(state.days, state.selectedDate, state.settings.rewards),
-  badges: unlockedBadgeIds(computeStats(state.days, state.exams, state.settings.rewards)),
+  ...progressSnapshot(state, state.selectedDate, state.settings.rewards),
+  badges: unlockedBadgeIds(computeStats(state, state.settings.rewards)),
 });
 const screenCenter = () => ({ x: window.innerWidth / 2, y: window.innerHeight / 3 });
 
